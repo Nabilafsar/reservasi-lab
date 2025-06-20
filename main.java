@@ -96,9 +96,10 @@ public class main {
         do {
             System.out.println("\n--- Menu Dosen ---");
             System.out.println("1. Pesan Laboratorium");
-            System.out.println("2. Lihat Reservasi");
-            System.out.println("3. edit pesanan");
-            System.out.println("4. Keluar");
+            System.out.println("2. Lihat Reservasi Saya");
+            System.out.println("3. Lihat semua Reservas");
+            System.out.println("4. edit pesanan");
+            System.out.println("5. Keluar");
             System.out.print("Pilih: ");
             pilih1 = scanner.nextInt();
             switch (pilih1) {
@@ -106,18 +107,20 @@ public class main {
                     tambahPemesanan(idUser);
                     break;
                 case 2:
-                    lihatReservasi(idUser);
-
+                    StatusReservasi(idUser);
                     break;
                 case 3:
-                    edit_reservasi(idUser);
+                    SemuaReservasiDisetujui(conn);
                     break;
                 case 4:
+                    edit_reservasi(idUser);
+                    break;
+                case 5:
                     break;
 
             }
 
-        } while (pilih1 != 4);
+        } while (pilih1 != 5);
     }
 
     static void mahasiswaMenu(int idUser) throws SQLException {
@@ -126,8 +129,9 @@ public class main {
             System.out.println("\n--- Menu Mahasiswa ---");
             System.out.println("1. Pesan Laboratorium");
             System.out.println("2. Status Reservasi");
-            System.out.println("3. Edit Reservasi");
-            System.out.println("4. Keluar");
+            System.out.println("3. Lihat Semua Reservasi ");
+            System.out.println("4. Edit Reservasi");
+            System.out.println("5. Keluar");
             System.out.print("Pilih: ");
             pilih1 = scanner.nextInt();
             switch (pilih1) {
@@ -135,16 +139,19 @@ public class main {
                     tambahPemesanan(idUser);
                     break;
                 case 2:
-                    lihatReservasi(idUser);
+                    StatusReservasi(idUser);
                     break;
-                case 3:
+                case 3 :
+                    SemuaReservasiDisetujui(conn);
+                    break;    
+                case 4:
                     edit_reservasi(idUser);
                     break;
-                case 4:
+                case 5:
                     break;
             }
 
-        } while (pilih1 != 4);
+        } while (pilih1 != 5);
     }
 
     static void tampilkanLaporan() throws SQLException {
@@ -289,7 +296,7 @@ public class main {
         }
     }
 
-    static void lihatReservasi(int idUser) throws SQLException {
+    static void StatusReservasi(int idUser) throws SQLException {
         System.out.println("===== LIHAT RESERVASI =====");
 
         String sql = "SELECT p.idPemesanan, mk.namaMK, l.namaLab, p.tanggal, "
@@ -382,6 +389,36 @@ public class main {
             String username = rs.getString("username");
             int jumlah = rs.getInt("jumlah_pemesanan");
             System.out.println(username + "             " + jumlah);
+        }
+    }
+
+    static void SemuaReservasiDisetujui(Connection conn) throws SQLException {
+        System.out.println("===== SEMUA RESERVASI YANG DISETUJUI =====");
+
+        String sql = "SELECT p.idPemesanan, u.username, mk.namaMK, l.namaLab, p.tanggal, "
+                + "p.jamMulai, p.jamAkhir, p.keperluan, hr.status "
+                + "FROM pemesanan p "
+                + "JOIN users u ON p.idUser = u.idUser "
+                + "JOIN matakuliah mk ON p.idMK = mk.idMK "
+                + "JOIN lab l ON p.idLab = l.idLab "
+                + "JOIN hasil_reservasi hr ON p.idPemesanan = hr.idPemesanan "
+                + "WHERE hr.status = 'disetujui' "
+                + "ORDER BY p.tanggal ASC, p.jamMulai ASC";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                System.out.println("ID Pemesanan : " + rs.getInt("idPemesanan"));
+                System.out.println("Pengguna     : " + rs.getString("username"));
+                System.out.println("Mata Kuliah  : " + rs.getString("namaMK"));
+                System.out.println("Lab          : " + rs.getString("namaLab"));
+                System.out.println("Tanggal      : " + rs.getDate("tanggal"));
+                System.out.println("Jam          : " + rs.getTime("jamMulai") + " - " + rs.getTime("jamAkhir"));
+                System.out.println("Keperluan    : " + rs.getString("keperluan"));
+                System.out.println("Status       : " + rs.getString("status"));
+                System.out.println("====================================================================================================================");
+            }
         }
     }
 
